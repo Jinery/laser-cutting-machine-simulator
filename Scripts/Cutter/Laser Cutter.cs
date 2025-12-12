@@ -10,6 +10,7 @@ public class LaserCutter : MonoBehaviour
     [SerializeField] private AudioClip _cutterSound;
     [SerializeField] private LaserBeam _laserBeam;
     [SerializeField] private CuttingController _cuttingController;
+    [SerializeField] private ElecricalPanel _electricalPanel;
 
     [SerializeField] private CutterPowerEvent _onPowerStateChanged = new CutterPowerEvent();
 
@@ -35,7 +36,9 @@ public class LaserCutter : MonoBehaviour
     public LaserCutterGrid Grid => _grid;
     public LaserCutterHead Head => _head;
     public LaserCutterDoor Door => _cutterDoor;
-    
+    public ElecricalPanel ElectricalPanel => _electricalPanel;
+
+
     public CutterPowerEvent OnPowerStateChanged => _onPowerStateChanged;
 
     private void Awake()
@@ -48,8 +51,28 @@ public class LaserCutter : MonoBehaviour
         }
     }
 
+    private void Start()
+    {
+        if(_electricalPanel != null)
+        {
+            _electricalPanel.OnPanelStateChanged.AddListener(ToggleCutterState);
+            _electricalPanel.OnKnockedOut.AddListener(() => ToggleCutterState(false));
+        }
+    }
+
+    private void OnDestroy()
+    {
+        if (_electricalPanel != null)
+        {
+            _electricalPanel.OnPanelStateChanged.RemoveListener(ToggleCutterState);
+            _electricalPanel.OnKnockedOut.RemoveListener(() => ToggleCutterState(false));
+        }
+    }
+
     private void ToggleCutterState(bool cutterState)
     {
+        if (cutterState && !_electricalPanel.IsEnabled) return;
+
         if(_audioSource != null && _audioSource.clip != null)
         {
             if (cutterState) _audioSource.Play(); else _audioSource.Stop();
@@ -62,7 +85,7 @@ public class LaserCutter : MonoBehaviour
 
     public void StartCutting()
     {
-        if(_isEnabled)
+        if(_isEnabled && _electricalPanel.IsEnabled)
         {
             if(_cutterDoor.IsOpened || _head.IsCutting)
             {
@@ -108,6 +131,9 @@ public class LaserCutter : MonoBehaviour
 
         if(_cuttingController == null)
             _cuttingController = GetComponent<CuttingController>();
+
+        if (_electricalPanel == null) 
+            _electricalPanel = FindFirstObjectByType<ElecricalPanel>();
     }
 
     private void SetupAudioSourceSettings()

@@ -917,6 +917,7 @@ MonoBehaviour:
   _cutterSound: {fileID: 0}
   _laserBeam: {fileID: 5387265482264539051}
   _cuttingController: {fileID: 322588433199016869}
+  _electricalPanel: {fileID: 0}
 --- !u!114 &322588433199016869
 MonoBehaviour:
   m_ObjectHideFlags: 0
