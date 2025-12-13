@@ -114,17 +114,9 @@ public class ElectricalPanelLever : XRGrabInteractable
     {
         if (_currentController == null) return;
 
-        Vector3 currentGrabPoint = _currentController.transform.position;
-
-        Vector3 rotationCenter = transform.position;
-        Vector3 rotationAxis = transform.right;
-
-        Vector3 initialVector = _initialGrabPoint - rotationCenter;
-        Vector3 currentVector = currentGrabPoint - rotationCenter;
-
-        float angleDelta = Vector3.SignedAngle(initialVector, currentVector, rotationAxis);
-
-        _currentAngle = Mathf.Clamp(_initialGrabAngle + angleDelta, _minAngle, _maxAngle);
+        Vector3 localControllerPos = transform.InverseTransformPoint(_currentController.transform.position);
+        float angle = Mathf.Atan2(localControllerPos.z, localControllerPos.y) * Mathf.Rad2Deg;
+        _currentAngle = Mathf.Clamp(angle, _minAngle, _maxAngle);
 
         CheckSnapState();
         ApplyRotation();
@@ -173,8 +165,6 @@ public class ElectricalPanelLever : XRGrabInteractable
 
     private void ApplyRotation()
     {
-        Vector3 newRotation = _initialRotation;
-        newRotation.x = _initialRotation.x + _currentAngle;
-        transform.localEulerAngles = newRotation;
+        transform.localRotation = Quaternion.Euler(_initialRotation.x + _currentAngle, _initialRotation.y, _initialRotation.z);
     }
 }

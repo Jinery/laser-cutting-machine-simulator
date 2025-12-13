@@ -24,6 +24,7 @@ public class FireExtinguisher : InteractableObject
     {
         _renderer = GetComponent<MeshRenderer>();
         if (_extingusherCollider != null) _extingusherCollider.enabled = false;
+        if (_extinguisherParticles != null) _extinguisherParticles.Stop();
         SetupColor();
     }
 

@@ -60,7 +60,7 @@ public class LaserCutterDoor : XRGrabInteractable
 
         Vector3 currentGrabPoint = _currentInteractor.transform.position;
 
-        Vector3 rotationCenter = transform.position;
+        Vector3 rotationCenter = transform.localPosition;
         Vector3 rotationAxis = transform.right;
 
         Vector3 initialVector = _initialGrabPoint - rotationCenter;

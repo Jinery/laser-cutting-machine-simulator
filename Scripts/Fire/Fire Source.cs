@@ -30,6 +30,7 @@ public class FireSource : MonoBehaviour
     private Material _originalMaterial;
     private List<FireSource> _childFires = new List<FireSource>();
     private Collider _fireCollider;
+    [SerializeField] private GameObject[] _firePrefabs;
 
     private float _extinguishProgress = 0f;
 
@@ -40,6 +41,13 @@ public class FireSource : MonoBehaviour
         get => _fireType;
         set => _fireType = value;
     }
+
+    public GameObject[] FirePrefabs
+    {
+        get => _firePrefabs;
+        set => _firePrefabs = value;
+    }
+
     public float Intensity => _currentIntensity;
     public bool IsActive => _isActive;
 
@@ -125,7 +133,7 @@ public class FireSource : MonoBehaviour
     private void SpreadFire()
     {
         float spreadChance = _fireType.GetSpreadChance();
-        if(URandom.value > spreadChance)
+        if (URandom.value <= spreadChance)
         {
             List<Collider> hitColliders = Physics.OverlapSphere(transform.position, _spreadRadius).ToList();
             hitColliders.ForEach(collider =>
@@ -143,8 +151,47 @@ public class FireSource : MonoBehaviour
                         }
                     }
                 }
+                else
+                {
+                    CreateChildFire(collider.transform.position);
+                }
             });
         }
+    }
+
+    private void CreateChildFire(Vector3 position)
+    {
+        GameObject firePrefab = GetFirePrefabByType(_fireType);
+        if (firePrefab == null)
+        {
+            Debug.LogWarning($"Нет префаба для типа {_fireType}");
+            return;
+        }
+
+        GameObject fireObject = Instantiate(firePrefab, position, Quaternion.identity);
+        FireSource childFire = fireObject.GetComponent<FireSource>();
+
+        if (childFire != null)
+        {
+            _childFires.Add(childFire);
+        }
+    }
+
+    private GameObject GetFirePrefabByType(FireType type)
+    {
+        if (_firePrefabs == null || _firePrefabs.Length == 0)
+            return null;
+
+        foreach (var prefab in _firePrefabs)
+        {
+            if (prefab == null) continue;
+
+            FireSource fireSource = prefab.GetComponent<FireSource>();
+            if (fireSource != null && fireSource.Type == type)
+                return prefab;
+        }
+
+        return _firePrefabs.Length > 0 ? _firePrefabs[0] : null;
     }
 
     public void Extinguish(FireExtinguisher extinguisher)
